@@ -26,12 +26,16 @@
 ;;;       What gets accumulated at each step?
 
 (define (length-tr lst)
-  'x)
+  (define (go acc rest-lst)
+    (if (null? rest-lst)
+        acc
+        (go (+ 1 acc) (cdr rest-lst))))
+  (go 0 lst))
 
 ;;; Test cases (uncomment to test):
-; (length-tr '())           ; => 0
-; (length-tr '(a b c))      ; => 3
-; (length-tr '(1 2 3 4 5))  ; => 5
+ (length-tr '())           ; => 0
+ (length-tr '(a b c))      ; => 3
+ (length-tr '(1 2 3 4 5))  ; => 5
 
 
 ;;; ============================================================
@@ -51,8 +55,11 @@
 ;;;       What values would you track? Those become your accumulator(s).
 
 (define (power base exp)
-  'x)
+  (letrec ((help (lambda (base exp acc) (cond [(= exp 0) acc]
+                                              [(else (help base (- exp 1) (* acc base)))]
+  (help base exp 1)))
 
+                   (
 
 ;;; ============================================================
 ;;; PROBLEM 3: Spot the Tail Recursion

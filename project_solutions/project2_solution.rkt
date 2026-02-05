@@ -291,7 +291,7 @@ fractal-plant
 
 (define dragon (draw-l-system
                 "FX"
-                (list (cons #\X "X+YF+") (cons #\Y "-FX-Y"))
+                (list (cons #\X "X+YF+") (cons #\F "-FX-Y"))
                 8
                 10
                 (/ pi 2)

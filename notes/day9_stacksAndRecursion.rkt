@@ -5,7 +5,7 @@
 ;;; WARMUP
 ; average using foldr
 (define (average a)
-  '())
+  (/ (foldr (lambda (val acc) (+ val acc)) 0 a) (length a)))
 (average '(0 10 20))
 
 (newline)

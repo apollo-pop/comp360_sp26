@@ -108,3 +108,69 @@
 
 ;;; Part 5: Come up with your own fractal!
 
+;; Fatou Set: I used AI to give me a few steps,
+;; including function definitions (but no code) to
+;; get this working. I am happy to show you my prompts
+;; if you are curious.
+
+(define (escape-count f z max-iter)
+  (define (go z acc)
+    (if (or (> (magnitude z) 2) (>= acc max-iter))
+        acc
+        (go (f z) (+ 1 acc))))
+  (go z 0))
+
+(define c -0.5125+0.5213i)
+(define z 0.5+0.2i)
+(escape-count (lambda (z) (+ (* z z) c)) z 10)
+
+;; function checked for correctness with AI
+;; (coordinate mapping is hard! AI caught an
+;;  error regarding the flipped y-axis for
+;;  graphics)
+(define (pixel->complex px py
+                        width height
+                        x-min x-max
+                        y-min y-max)
+  ;; Map pixel (px, py) to complex number
+  ;; px=0 -> x-min, px=width -> x-max (similarly for y)]
+  (let ((x (+ (* (/ px width) (- x-max x-min)) x-min))
+        (y (- y-max (* (/ py height) (- y-max y-min)))))
+    (+ x (* y +i))
+    ))
+(pixel->complex 20 70 100 100 -1.5 1.5 -1.5 1.5)
+
+;; returns a color, darkened based on how many iterations it takes to "escape"
+;; or another color if the point never escapes
+(define (iteration->color n max-iter)
+  (define (darker color-list by) ; recycling darker from Project 1
+    (make-color (floor (* (car by) (car color-list))) ; R
+                (floor (* (car (cdr by)) (car (cdr color-list)))) ; G
+                (floor (* (car (cdr (cdr by))) (car (cdr (cdr color-list))))))) ; B
+  (if (= n max-iter)
+      (make-color 0 255 0)
+      (let ((scale (expt (/ n max-iter) 0.3)))
+        (darker '(0 0 255) (list scale scale scale)))))
+
+  (define (draw-fatou f max-iter width height)
+    ;; for every pixel in width x height
+    ;; calculate its complex coordinate
+    ;; then compute its escape-count
+    ;; then create its color
+    ;; then color the pixel accordingly
+    (define (make-image curr-y)
+      (if (= curr-y height)
+          (make-row 0 curr-y)
+          (above (make-row 0 curr-y) (make-image (+ 1 curr-y)))
+          ))
+    (define (make-row x y)
+      (let* ((z (pixel->complex x y width height -1.5 1.5 -1.5 1.5))
+             (count (escape-count f z max-iter))
+             (color (iteration->color count max-iter)))
+        (if (= x width)
+            (rectangle 1 1 "solid" color)
+            (beside (rectangle 1 1 "solid" color) (make-row (+ x 1) y)))))
+    (make-image 0))
+
+  (draw-fatou (lambda (z) (+ (* z z) c)) 40 600 600)
+  
