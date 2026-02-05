@@ -176,4 +176,4 @@
 ;; - modify the lambda expression
 ;; - increase/decrease the max-iter (2nd argument)
 ;; - increase/decrease the resolution (last 2 arguments)
-(draw-fatou (lambda (z) (+ (* z z) c)) 60 400 400)
+(draw-fatou (lambda (z) (+ (* z z) c)) 50 400 400)
