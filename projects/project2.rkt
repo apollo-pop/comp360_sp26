@@ -152,25 +152,28 @@
       (let ((scale (expt (/ n max-iter) 0.3)))
         (darker '(0 0 255) (list scale scale scale)))))
 
-  (define (draw-fatou f max-iter width height)
-    ;; for every pixel in width x height
-    ;; calculate its complex coordinate
-    ;; then compute its escape-count
-    ;; then create its color
-    ;; then color the pixel accordingly
-    (define (make-image curr-y)
-      (if (= curr-y height)
-          (make-row 0 curr-y)
-          (above (make-row 0 curr-y) (make-image (+ 1 curr-y)))
-          ))
-    (define (make-row x y)
-      (let* ((z (pixel->complex x y width height -1.5 1.5 -1.5 1.5))
-             (count (escape-count f z max-iter))
-             (color (iteration->color count max-iter)))
-        (if (= x width)
-            (rectangle 1 1 "solid" color)
-            (beside (rectangle 1 1 "solid" color) (make-row (+ x 1) y)))))
-    (make-image 0))
+(define (draw-fatou f max-iter width height)
+  ;; for every pixel in width x height
+  ;; calculate its complex coordinate
+  ;; then compute its escape-count
+  ;; then create its color
+  ;; then color the pixel accordingly
+  (define (make-image curr-y)
+    (if (= curr-y height)
+        (make-row 0 curr-y)
+        (above (make-row 0 curr-y) (make-image (+ 1 curr-y)))
+        ))
+  (define (make-row x y)
+    (let* ((z (pixel->complex x y width height -1.5 1.5 -1.5 1.5))
+           (count (escape-count f z max-iter))
+           (color (iteration->color count max-iter)))
+      (if (= x width)
+          (rectangle 1 1 "solid" color)
+          (beside (rectangle 1 1 "solid" color) (make-row (+ x 1) y)))))
+  (make-image 0))
 
-  (draw-fatou (lambda (z) (+ (* z z) c)) 40 600 600)
-  
+;; To produce different images, either:
+;; - modify the lambda expression
+;; - increase/decrease the max-iter (2nd argument)
+;; - increase/decrease the resolution (last 2 arguments)
+(draw-fatou (lambda (z) (+ (* z z) c)) 60 400 400)
