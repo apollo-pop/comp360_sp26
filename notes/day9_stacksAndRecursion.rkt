@@ -22,8 +22,8 @@
       0
       (+ (car a) (sum-list (cdr a)))))
 
-(sum-list '(5 10 15 20))
-(newline)
+;(sum-list '(5 10 15 20))
+;(newline)
 
 "The Stack"
 ;;; THE STACK (easier to look at)
@@ -51,23 +51,23 @@
       (printf "    ~a~n" (car frame)))
     (newline)))
 
-;; Non-tail-recursive factorial
-;(define (factorial n)
-;  (show-stack-info 'factorial n)
-;  (if (zero? n)
-;      1
-;      (* n (factorial (sub1 n)))))
+; Non-tail-recursive factorial
+(define (factorial n)
+  (show-stack-info 'factorial n)
+  (if (zero? n)
+      1
+      (* n (factorial (sub1 n)))))
 
-;; Tail-recursive factorial
-;(define (factorial-tail n [acc 1])
-;  (show-stack-info 'factorial-tail n acc)
-;  (if (zero? n)
-;      acc
-;      (factorial-tail (sub1 n) (* n acc))))
+; Tail-recursive factorial
+(define (factorial-tail n [acc 1])
+  (show-stack-info 'factorial-tail n acc)
+  (if (zero? n)
+      acc
+      (factorial-tail (sub1 n) (* n acc))))
 
-;(displayln "=== Non-tail-recursive ===\n")
-;(factorial 5)
-;(newline)
+(displayln "=== Non-tail-recursive ===\n")
+(factorial 5)
+(newline)
 
-;(displayln "=== Tail-recursive ===\n")
-;(factorial-tail 5)
+(displayln "=== Tail-recursive ===\n")
+(factorial-tail 5)

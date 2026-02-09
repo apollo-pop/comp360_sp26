@@ -160,22 +160,15 @@
 ; 1  (define a 2)
 ; 2  (define (f x) (lambda (y) (+ a x y)))
 ; 3  (define g (f 3))
-; 4  (define a 10)    ; Racket allows redefinition at the top level
-; 5  (define z (g 4))
+; 4  (define z (g 4))
 
 ;;; Step by step:
 ;;; Line 1:
 ;;; Line 2:
 ;;; Line 3 (what frame is created? what closure is returned?):
-;;; Line 4:
 ;;; Line 5 (what frame is created? what is the result?):
 ;;;
 ;;; What is the value of z?
-;;; Answer:
-;;;
-;;; TRICKY: Does line 4 affect the result? Why or why not?
-;;; (Hint: think about what the closure's environment pointer
-;;; points to, and what happens when a is looked up.)
 ;;; Answer:
 
 

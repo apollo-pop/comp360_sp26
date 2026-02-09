@@ -159,23 +159,16 @@
 ; 1  (define a 2)
 ; 2  (define (f x) (lambda (y) (+ a x y)))
 ; 3  (define g (f 3))
-; 4  (define a 10)    ; Racket allows redefinition at the top level
-; 5  (define z (g 4))
+; 4  (define z (g 4))
 
 ;;; Step by step:
-;;; Line 1:
-;;; Line 2:
-;;; Line 3 (what frame is created? what closure is returned?):
-;;; Line 4:
-;;; Line 5 (what frame is created? what is the result?):
+;;; Line 1: bind a to 2
+;;; Line 2: create a closure - (lambda (y) (+ a x y)) || global frame
+;;; Line 3 (what frame is created? what closure is returned?): create a frame containing x = 3, create a closure: (+ a x y) || global frame
+;;; Line 4 (what frame is created? what is the result?): create a frame containing y = 4, evaluate (+ 2 3 4)
 ;;;
 ;;; What is the value of z?
-;;; Answer:
-;;;
-;;; TRICKY: Does line 4 affect the result? Why or why not?
-;;; (Hint: think about what the closure's environment pointer
-;;; points to, and what happens when a is looked up.)
-;;; Answer:
+;;; Answer: 9
 
 
 ;;; ============================================================
@@ -186,23 +179,23 @@
 ;;; which applies f twice to its argument.
 
 (define (apply-twice f)
-  'todo)
+  (lambda (x) (f (f x))))
 
 ;;; Test cases (uncomment to test):
-; ((apply-twice add1) 5)                       ; => 7
-; ((apply-twice (lambda (x) (* x x))) 3)       ; => 81
+((apply-twice add1) 5)                       ; => 7
+((apply-twice (lambda (x) (* x x))) 3)       ; => 81
 
 
 ;;; 6b: Write a function (compose f g) that returns a new function
 ;;; which computes f(g(x)).
 
 (define (compose f g)
-  'todo)
+  (lambda (x) (f (g x))))
 
 ;;; Test cases (uncomment to test):
-; ((compose add1 add1) 5)                           ; => 7
-; ((compose (lambda (x) (* x 2))
-;           (lambda (x) (+ x 1))) 3)                ; => 8
+((compose add1 add1) 5)                           ; => 7
+((compose (lambda (x) (* x 2))
+          (lambda (x) (+ x 1))) 3)                ; => 8
 
 
 ;;; ============================================================
@@ -216,14 +209,16 @@
 ;;; This requires mutation (set!) which we haven't covered much,
 ;;; but it's a classic closure example. Try it if you're curious!
 
-; (define (make-counter start)
-;   'todo)
+(define (make-counter start)
+  (lambda () (let ((current start))
+               (set! start (+ start 1))
+               current)))
 
 ;;; Test cases (uncomment to test):
-; (define c (make-counter 0))
-; (c)   ; => 0
-; (c)   ; => 1
-; (c)   ; => 2
-; (define d (make-counter 10))
-; (d)   ; => 10
-; (c)   ; => 3
+(define c (make-counter 0))
+(c)   ; => 0
+(c)   ; => 1
+(c)   ; => 2
+(define d (make-counter 10))
+(d)   ; => 10
+(c)   ; => 3
