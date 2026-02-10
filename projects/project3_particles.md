@@ -114,12 +114,12 @@ Write a predicate `particle-alive?` that returns `#t` if a particle's life is gr
 Write a function `draw-particle` that takes a particle and a background image, and draws a small circle at the particle's position. The circle's opacity should fade as life decreases (use the life value to determine alpha, the opacity).
 
 ```racket
-(define bg (rectangle 400 400 "solid" "black"))
+(define bg (rectangle 400 400 "solid" "gray"))
 (draw-particle (list 200 200 0 0 60) bg)  ; draws a bright particle
 (draw-particle (list 200 200 0 0 10) bg)  ; draws a faded particle
 ```
 
-*Hint:* Use `place-image` and create a circle with `(make-color 255 255 255 alpha)` where alpha is based on life. You might want to scale the particle's `life` to the 0-255 range. You can arbirtarily decide what `life` value counts as "full opacity". 
+*Hint:* Use `place-image` and create a circle with `(make-color 0 0 0 alpha)` where alpha is based on life. You probably want to scale and clamp the particle's `life` to the 0-255 range. You can arbirtarily decide what `life` value counts as "full opacity" (I chose `30` as "max opacity").
 
 ---
 
@@ -147,16 +147,16 @@ A closure is a function that "remembers" values from the environment where it wa
 Write a function `make-spawner` that takes configuration parameters and returns a **function** that creates particles. The returned function should take no arguments and produce a new particle each time it's called.
 
 ```racket
-(define (make-spawner x y speed-min speed-max life)
+(define (make-spawner x y v-min v-max life)
   ;; Returns a function that creates particles at (x, y)
-  ;; with random absolute velocity between speed-min and speed-max
+  ;; with random x and y velocities between speed-min and speed-max
   ;; and the given lifetime
   ...)
 ```
 
 The spawned particles should have:
 - Position at `(x, y)`
-- Random velocity components between `-speed-max` and `speed-max` (but at least `speed-min` in magnitude)
+- Random velocity components between `v-min` and `v-max`
 - The specified `life`
 
 ```racket
@@ -168,7 +168,9 @@ The spawned particles should have:
 (explosion)  ; => fast-moving particle, shorter life
 ```
 
-*Hint:* Use `(- (* 2 (random)) 1)` to get a random number between -1 and 1, then scale it.
+*Hint:* Use `(random min max)` to get a random number between `min` and `max`.
+
+*Hint:* You can use a `lambda` with no arguments.
 
 *Think about it:* What values does the returned lambda "close over"? This is a closure because the lambda captures `x`, `y`, `speed-min`, `speed-max`, and `life`.
 
@@ -199,9 +201,9 @@ Write `make-wind` that takes horizontal and vertical wind strength and returns a
 (define gentle-breeze (make-wind 0.1 0))
 (define updraft (make-wind 0 -0.3))
 
-(define p (list 100 100 0 0 60))
-(gentle-breeze p)  ; => (list 100 100 0.1 0 60)
-(updraft p)        ; => (list 100 100 0 -0.3 60)
+(define p1 (list 100 100 0 0 60))
+(gentle-breeze p1)  ; => (list 100 100 0.1 0 60)
+(updraft p1)        ; => (list 100 100 0 -0.3 60)
 ```
 
 ### Problem 2.4: make-friction
@@ -212,14 +214,14 @@ Write `make-friction` that takes a friction coefficient (0 to 1) and returns a f
 (define air-resistance (make-friction 0.98))
 (define heavy-friction (make-friction 0.8))
 
-(define p (list 100 100 10 10 60))
-(air-resistance p)   ; => (list 100 100 9.8 9.8 60)
-(heavy-friction p)   ; => (list 100 100 8 8 60)
+(define p2 (list 100 100 10 10 60))
+(air-resistance p2)   ; => (list 100 100 9.8 9.8 60)
+(heavy-friction p2)   ; => (list 100 100 8 8 60)
 ```
 
 ### Problem 2.5: make-attractor
 
-Write `make-attractor` that takes a position (ax, ay) and a strength, and returns a force function that pulls particles toward that point.
+Write `make-attractor` that takes a position (ax, ay) and a strength, and returns a force function that pulls particles toward that point. For example, if the particle is to the left of the attractor, increase its `vx`, and decrease it if it's to the right, or leave it unchanged if they are equal.
 
 ```racket
 (define (make-attractor ax ay strength)
@@ -230,14 +232,14 @@ Write `make-attractor` that takes a position (ax, ay) and a strength, and return
 ```racket
 (define black-hole (make-attractor 200 200 0.1))
 
-(define p (list 100 200 0 0 60))  ; to the left of attractor
-(black-hole p)  ; => particle with positive vx (pulled right)
+(define p3 (list 100 200 0 0 60))  ; to the left of attractor
+(black-hole p3)  ; => particle with positive vx (pulled right)
 
-(define p2 (list 200 100 0 0 60))  ; above attractor
-(black-hole p2)  ; => particle with positive vy (pulled down)
+(define p4 (list 200 100 0 0 60))  ; above attractor
+(black-hole p4)  ; => particle with positive vy (pulled down)
 ```
 
-*Hint:* Calculate the direction from particle to attractor, normalize it (look this up), scale it, and add to velocity.
+*Additional Challenge:* Instead of directly modifying the vx and vy with the strength, calculate the direction from particle to attractor, normalize it (look this up), scale it, and add to velocity.
 
 ### Problem 2.6: compose-forces
 
@@ -249,6 +251,8 @@ Write a function that takes multiple force functions and returns a single force 
   ...)
 ```
 
+*Hint:* Use `foldr` or `foldl` to apply each force in sequence.
+
 ```racket
 (define physics (compose-forces
                   (make-gravity 0.5)
@@ -258,8 +262,6 @@ Write a function that takes multiple force functions and returns a single force 
 (define p (list 100 100 10 0 60))
 (physics p)  ; applies gravity, then wind, then friction
 ```
-
-*Hint:* Use `foldr` or `foldl` to apply each force in sequence.
 
 ---
 
