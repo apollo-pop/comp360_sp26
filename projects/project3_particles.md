@@ -30,14 +30,14 @@ My solutions will become available on Feb 27.
 
 ## Overview
 
-In this project, you'll build a particle system simulator. Particle systems are used extensively in games and visual effects—think explosions, fire, rain, snow, sparks, and magic spells.
+In this project, you'll build a particle system simulator. Particle systems are used extensively in games and visual effects: explosions, fire, rain, snow, sparks, etc.
 
-More importantly for us, particle systems are an excellent domain for exploring **closures** and **tail recursion**:
+More importantly for us, particle systems are perfect for exploring **closures** and **tail recursion**:
 
 - **Closures** let us create "particle factories" and "force generators" that encapsulate their configuration
 - **Tail recursion** is essential for efficiently processing hundreds of particles per frame
 
-By the end, you'll have a working particle simulator and a deeper understanding of how functional programming concepts enable elegant, efficient code.
+By the end, you'll have a working particle simulator and a deeper understanding of functional programming.
 
 ---
 
@@ -111,7 +111,7 @@ Write a predicate `particle-alive?` that returns `#t` if a particle's life is gr
 
 ### Problem 1.5: draw-particle
 
-Write a function `draw-particle` that takes a particle and a background image, and draws a small circle at the particle's position. The circle's opacity should fade as life decreases (use the life value to determine alpha).
+Write a function `draw-particle` that takes a particle and a background image, and draws a small circle at the particle's position. The circle's opacity should fade as life decreases (use the life value to determine alpha, the opacity).
 
 ```racket
 (define bg (rectangle 400 400 "solid" "black"))
@@ -119,13 +119,13 @@ Write a function `draw-particle` that takes a particle and a background image, a
 (draw-particle (list 200 200 0 0 10) bg)  ; draws a faded particle
 ```
 
-*Hint:* Use `place-image` and create a circle with `(make-color 255 255 255 alpha)` where alpha is based on life. You might want to scale life to the 0-255 range.
+*Hint:* Use `place-image` and create a circle with `(make-color 255 255 255 alpha)` where alpha is based on life. You might want to scale the particle's `life` to the 0-255 range. You can arbirtarily decide what `life` value counts as "full opacity". 
 
 ---
 
 ## Part 2: Closures — Factories and Forces
 
-This is where it gets interesting. We'll use **closures** to create configurable particle spawners and force generators.
+Now we'll use **closures** to create configurable particle spawners and force generators.
 
 ### What is a Closure?
 
@@ -149,7 +149,7 @@ Write a function `make-spawner` that takes configuration parameters and returns 
 ```racket
 (define (make-spawner x y speed-min speed-max life)
   ;; Returns a function that creates particles at (x, y)
-  ;; with random velocity between speed-min and speed-max
+  ;; with random absolute velocity between speed-min and speed-max
   ;; and the given lifetime
   ...)
 ```
@@ -187,7 +187,7 @@ Write a function `make-gravity` that takes a strength value and returns a **forc
 (define moon-gravity (make-gravity 0.08))
 
 (define p (list 100 100 0 0 60))
-(earth-gravity p)  ; => (list 100 100 0 0.5 60)  ; vy increased
+(earth-gravity p)  ; => (list 100 100 0 0.5 60)  ; vy increased, positive y is "down"
 (moon-gravity p)   ; => (list 100 100 0 0.08 60) ; less increase
 ```
 
@@ -237,14 +237,14 @@ Write `make-attractor` that takes a position (ax, ay) and a strength, and return
 (black-hole p2)  ; => particle with positive vy (pulled down)
 ```
 
-*Hint:* Calculate the direction from particle to attractor, normalize or scale it, and add to velocity.
+*Hint:* Calculate the direction from particle to attractor, normalize it (look this up), scale it, and add to velocity.
 
 ### Problem 2.6: compose-forces
 
 Write a function that takes multiple force functions and returns a single force function that applies all of them.
 
 ```racket
-(define (compose-forces . forces)
+(define (compose-forces . forces) ; ". args" means: take a variable number of arguments as a list called "forces"
   ;; Returns a function that applies all forces in sequence
   ...)
 ```
@@ -281,7 +281,7 @@ Tail-recursive functions reuse the same stack frame:
 ```racket
 ;; Tail-recursive — constant stack space
 (define (sum-tr lst)
-  (define (helper lst acc)
+  (define (helper lst acc) ; acc is an ACCumulator
     (if (null? lst) acc
         (helper (cdr lst) (+ (car lst) acc))))
   (helper lst 0))
@@ -400,7 +400,18 @@ Get a fountain working! Particles should spawn at the bottom, shoot upward, arc 
 
 ## Part 5: Your Particle Creation
 
-Create your own particle effect! Some ideas:
+Create your own particle scene! I expect you to implement at least one new *closure factory* (that is, `make-x`) and at least one new tail recursion function (that is, `do-y`, tail-recursively).
+
+New Closure Ideas:
+ - Repulsion from a point
+ - Bounding boxes that particles bounce off (requires collision checking)
+ - Sinusoidal force fields
+ - Particles with their own gravity
+
+New Tail Recursion ideas:
+ -
+
+Some ideas:
 
 - **Fireworks:** Click to launch a rocket that explodes into many particles
 - **Fire:** Particles that rise, fade from yellow to red, and shrink
