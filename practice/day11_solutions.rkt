@@ -265,11 +265,11 @@
     (filter (lambda (x) (> x n)) lst)))
 
 ;;; With currying (replace both lambdas):
-; (define make-filter-above 'todo)
+(define make-filter-above (curry filter (curryr >)))
 
 ;;; Test (uncomment to test):
-; (define above5 (make-filter-above 5))
-; (above5 '(1 3 5 7 9))    ; => '(7 9)
+(define above5 (make-filter-above 5))
+(above5 '(1 3 5 7 9))    ; => '(7 9)
 
 
 ;;; 6b: Write a function (make-mapper f) that returns a function
