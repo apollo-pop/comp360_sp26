@@ -63,25 +63,42 @@
 ;;; Hint: The callback receives two arguments (button event).
 ;;; Use (send msg set-label ...) to update the message.
 
+(define toggle
+  (cons
+   (lambda (target clicked event)
+     (if (equal? (send target get-label) "ON")
+         (send target set-label "OFF")
+         (send target set-label "ON")))
+   (lambda (target button event)
+     (send target set-label "OFF"))))
+
+(define log
+  (let ((clicks 0))
+    (cons
+     (lambda (target clicked event)
+       (set! clicks (+ 1 clicks))
+       (send target set-label (number->string clicks)))
+     (lambda (target clicked event)
+       (set! clicks 0)
+       (send target set-label "0")))))
+
 (define msg (new message% (parent frame) (label "OFF")))
 
 (define toggle-btn
   (new button% (parent frame)
        (label "Toggle")
-       (callback (lambda (button event)
-                   (if (equal? (send msg get-label) "ON")
-                       (send msg set-label "OFF")
-                       (send msg set-label "ON"))))))
+       (callback (curry (car toggle) msg))))
 
 
 ;;; 2c: Add a "Log" button whose callback prints
 ;;; "Button pressed N times" to the console each click, where
 ;;; N increases each time. Use a closure for the counter.
 
-; (define log-btn
-;   (new button% (parent frame)
-;     (label "Log")
-;     (callback 'todo)))   ; replace 'todo with your closure
+(define log-btn
+  (new button% (parent frame)
+       (label "Log")
+       (callback (lambda (button event)
+                   ((car log) log-btn button event)))))
 
 
 ;;; 2d: Add a "Reset" button that sets the toggle back to "OFF"
@@ -95,13 +112,15 @@
 ;;; Sketch your approach here, then implement it:
 ;;; Approach:
 
-; (define reset-btn
-;   (new button% (parent frame)
-;     (label "Reset")
-;     (callback 'todo)))   ; replace 'todo with your closure
+(define reset-btn
+  (new button% (parent frame)
+       (label "Reset")
+       (callback (lambda (button event)
+                   ((cdr toggle) msg button event)
+                   ((cdr log) log-btn button event)))))
 
 ;;; Finally, show the frame:
-; (send frame show #t)
+(send frame show #t)
 
 
 ;;; ============================================================
@@ -120,19 +139,39 @@
 ;;; Use set! to mutate a local list that stores the history.
 
 (define (make-history)
-  'todo)
+  (define history '())
+  (define (dispatcher method-name)
+    (cond ((equal? method-name 'record) record)
+          ((equal? method-name 'current) current)
+          ((equal? method-name 'undo!) undo!)
+          (else "ERROR")))
+  (define record
+    (lambda (message)
+      (set! history (cons message history))
+      history))
+  (define current
+    (lambda ()
+      (if (null? history)
+          "nothing yet!"
+          (car history))))
+  (define undo!
+    (lambda ()
+      (if (null? history)
+          "ERROR"
+          (set! history (cdr history)))))
+  dispatcher)
 
 ;;; Test cases (uncomment to test):
-; (define h (make-history))
-; ((h 'current))              ; => "nothing yet"
-; ((h 'record) "draft 1")
-; ((h 'record) "draft 2")
-; ((h 'current))              ; => "draft 2"
-; ((h 'undo!))
-; ((h 'current))              ; => "draft 1"
-; ((h 'undo!))
-; ((h 'current))              ; => "nothing yet"
-; ((h 'undo!))                ; => error: "Nothing to undo"
+ (define h (make-history))
+ ((h 'current))              ; => "nothing yet"
+ ((h 'record) "draft 1")
+ ((h 'record) "draft 2")
+ ((h 'current))              ; => "draft 2"
+ ((h 'undo!))
+ ((h 'current))              ; => "draft 1"
+ ((h 'undo!))
+ ((h 'current))              ; => "nothing yet"
+ ((h 'undo!))                ; => error: "Nothing to undo"
 
 
 ;;; Follow-up questions:

@@ -272,11 +272,11 @@ square-koch
 (define sierpinski (draw-l-system
                      "F-G-G"
                      (list (cons #\F "F-G+F+G-F") (cons #\G "GG"))
-                     3
-                     10
+                     4
+                     5
                      (/ (* 2 pi) 3)
-                     20
-                     200
+                     50
+                     50
                      0))
 sierpinski
 
@@ -291,7 +291,7 @@ fractal-plant
 
 (define dragon (draw-l-system
                 "FX"
-                (list (cons #\X "X+YF+") (cons #\F "-FX-Y"))
+                (list (cons #\X "X+YF") (cons #\F "FX-Y"))
                 8
                 10
                 (/ pi 2)
