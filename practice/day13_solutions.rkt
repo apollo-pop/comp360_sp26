@@ -19,79 +19,88 @@
 ;;; the code. Then uncomment to verify.
 
 ;;; 1a:
-; (define make-adder (lambda (n) (lambda (x) (+ n x))))
-; (define add5 (make-adder 5))
-; (define add10 (make-adder 10))
-;
-; (add5 3)
-; (add10 3)
-; (add5 (add10 0))
+(define make-adder (lambda (n) (lambda (x) (+ n x))))
+(define add5 (make-adder 5))
+(define add10 (make-adder 10))
+
+(add5 3)
+(add10 3)
+(add5 (add10 0))
 
 ;;; What is (add5 3)?
-;;; Answer:
+;;; Answer: 8
 ;;; What is (add10 3)?
-;;; Answer:
+;;; Answer: 13
 ;;; What is (add5 (add10 0))?
-;;; Answer:
+;;; Answer: 15
 ;;; Explanation (what does each closure capture?):
+; make-adder creates a closure which captures the value of the variable x
+; for add5, that's 5
+; for add10, that's 10
 
 
 ;;; 1b:
-; (define mystery
-;   (let ((x 1))
-;     (lambda (y)
-;       (let ((result (+ x y)))
-;         (set! x (+ x 1))
-;         result))))
-;
-; (mystery 10)
-; (mystery 10)
-; (mystery 10)
+(define mystery
+  (let ((x 1))
+    (lambda (y)
+      (let ((result (+ x y)))
+        (set! x (+ x 1))
+        result))))
+
+(mystery 10)
+(mystery 10)
+(mystery 10)
 
 ;;; What are the three results?
-;;; (mystery 10) => first call:
-;;; (mystery 10) => second call:
-;;; (mystery 10) => third call:
-;;; Explanation (what happens to x across calls?)
+;;; (mystery 10) => first call:  11
+;;; (mystery 10) => second call: 12
+;;; (mystery 10) => third call:  13
+;;; Explanation (what happens to x across calls?):
 ;;; In other words, does x get reset to 1 every call or not?
+
+; No, x doesn't reset every call: since mystery evaluates to a lambda,
+; x is only defined once when mystery is defined.
+; every time mystery is -called- the lambda mutates x
 
 
 ;;; 1c:
-; (define apply-twice (lambda (f) (lambda (x) (f (f x)))))
-; (define inc (lambda (x) (+ x 1)))
-; (define double (lambda (x) (* x 2)))
-;
-; ((apply-twice inc) 5)
-; ((apply-twice double) 3)
-; ((apply-twice (apply-twice inc)) 0)
+(define apply-twice (lambda (f) (lambda (x) (f (f x)))))
+(define inc (lambda (x) (+ x 1)))
+(define double (lambda (x) (* x 2)))
+
+((apply-twice inc) 5)
+((apply-twice double) 3)
+((apply-twice (apply-twice inc)) 0)
 
 ;;; What is ((apply-twice inc) 5)?
-;;; Answer:
+;;; Answer: 7
 ;;; What is ((apply-twice double) 3)?
-;;; Answer:
+;;; Answer: 12
 ;;; What is ((apply-twice (apply-twice inc)) 0)?
-;;; Answer:
+;;; Answer: 4
 ;;; Explanation (for the last one, what function does
 ;;;   (apply-twice inc) return? Then what does apply-twice
 ;;;   do to THAT function?):
+;   Effectively: (inc (inc (inc (inc 0))))
 
 
 ;;; 1d:
-; (define (compose f g) (lambda (x) (f (g x))))
-; (define add1 (curry + 1))
-; (define dbl (curry * 2))
-;
-; ((compose add1 dbl) 5)
-; ((compose dbl add1) 5)
-; ((compose add1 add1) 5)
+(define (compose f g) (lambda (x) (f (g x))))
+(define add1 (curry + 1))
+(define dbl (curry * 2))
+
+((compose add1 dbl) 5)
+((compose dbl add1) 5)
+((compose add1 add1) 5)
 
 ;;; What is ((compose add1 dbl) 5)?
-;;; Answer:
+;;; Answer: (add1 (dbl 5)) => 11
 ;;; What is ((compose dbl add1) 5)?
-;;; Answer:
+;;; Answer: 12
 ;;; What is ((compose add1 add1) 5)?
-;;; Answer:
+;;; Answer: 7
 ;;; Explanation (does the order of f and g matter?):
+; Yes!!
 
 
 ;;; ============================================================
@@ -112,8 +121,15 @@
 ;;; in that file. Alternatively, you can copy your drawing
 ;;; functions into this file.
 
+;;; Ex: (provide sierpinski) will expose sierpinski publicly
+
 ;;; Uncomment these when you're ready:
-; (require racket/gui/base)
+(require racket/gui/base)
+(require (except-in 2htdp/image make-color make-pen))
+(require "../project_solutions/project2_solution.rkt")
+(require (only-in pict pict->bitmap)) 
+
+
 
 ;;; --- 2a: Define your scenes ---
 ;;; Each scene is a pair: a title string and a function that
@@ -123,35 +139,35 @@
 ;;; Use your own drawing scenes from Project 2.
 ;;; Or use these (you'll have to provide helpers!)
 
-; (define scenes
-;   (list
-;    (cons "Sierpinski Triangle"
-;          (lambda () (sierpinski-triangle
-;                      (cons 150 10) (cons 10 290) (cons 290 290) 5)))
-;    (cons "Koch Snowflake"
-;          (lambda () (koch-snowflake (cons 150 150) 120 4)))
-;    (cons "Fractal Plant"
-;          (lambda () (draw-l-system
-;                      "X"
-;                      (list (cons #\X "F+[[X]-X]-F[-FX]+X")
-;                            (cons #\F "FF"))
-;                      4 4 (/ (* 25 pi) 180) 150 280 (- (/ pi 2)))))))
+(define scenes
+  (list
+   (cons "Sierpinski Triangle"
+         (lambda () (sierpinski-triangle
+                     (cons 150 10) (cons 10 290) (cons 290 290) 5)))
+   (cons "Koch Snowflake"
+         (lambda () (koch-snowflake (cons 150 150) 120 4)))
+   (cons "Fractal Plant"
+         (lambda () (draw-l-system
+                     "X"
+                     (list (cons #\X "F+[[X]-X]-F[-FX]+X")
+                           (cons #\F "FF"))
+                     4 4 (/ (* 25 pi) 180) 150 280 (- (/ pi 2)))))))
 
 
 ;;; --- 2b: Create the frame and layout ---
 ;;; Set up a frame and a vertical panel to hold the widgets.
 
-; (define frame (new frame% (label "Fractal Gallery")
-;                           (width 400) (height 500)))
-; (define panel (new vertical-panel% (parent frame)))
+(define frame (new frame% (label "Fractal Gallery")
+                   (width 400) (height 500)))
+(define panel (new vertical-panel% (parent frame)))
 
 
 ;;; --- 2c: Create the title label ---
 ;;; This label displays the name of the currently selected scene.
 ;;; It should start with a default message.
 
-; (define title-label (new message% (parent panel)
-;                                   (label "Select a scene")))
+(define title-label (new message% (parent panel)
+                         (label "Select a scene")))
 
 
 ;;; --- 2d: Create a canvas to display images ---
@@ -164,19 +180,14 @@
 ;;;
 ;;; Read this code carefully!!
 
-; (define current-image #f)
-;
-; (define canvas (new canvas% (parent panel)
-;                    (min-width 300) (min-height 300)
-;                    (paint-callback
-;                     (lambda (canvas dc) ; the paint-callback needs these two arguments!
-;                       (when current-image ; when is "if" without "else"
-;                         (let ((bmp (make-object bitmap%
-;                                      (image-width current-image)
-;                                      (image-height current-image))))
-;                           (define bmp-dc (new bitmap-dc% (bitmap bmp))) ; bitmap-dc% allows drawing!
-;                           (render-image current-image bmp-dc)
-;                           (send dc draw-bitmap bmp 0 0)))))))
+(define current-image #f)
+
+(define canvas (new canvas% (parent panel)
+                    (min-width 300) (min-height 300)
+                    (paint-callback
+                     (lambda (canvas dc)          
+                       ;; Draw the bitmap of image at coordinates (0, 0)
+                       (send dc draw-bitmap current-image 0 0)))))
 
 
 ;;; --- 2e: Create a button for each scene ---
@@ -192,22 +203,40 @@
 ;;; Hint: Use (car scene) for the title and ((cdr scene)) to
 ;;; call the thunk and get the image.
 
-; (define (make-scene-button scene)
-;   (new button% (parent panel)
-;        (label (car scene))
-;        (callback 'todo)))    ; replace 'todo with your callback, recall what arguments a button callback needs!
+(define (make-scene-button scene)
+  (new button% (parent panel)
+       (label (car scene))
+       (callback (lambda (button event)
+                   (send title-label set-label (car scene))
+                   (set! current-image (bitmap/file (string-append (car scene) ".png")))
+                   (send canvas refresh)))))    ; replace 'todo with your callback, recall what arguments a button callback needs!
 
 
 ;;; --- 2f: Create all the buttons ---
 ;;; Use map to call make-scene-button on every
 ;;; scene in your scenes list.
+; for saving images to files
+(define (save-2htdp-image img filename)
+  (let* ([width (image-width img)]
+         [height (image-height img)]
+         [bm (make-bitmap width height)]
+         [dc (new bitmap-dc% [bitmap bm])])
+    ; Draw the 2htdp image onto the bitmap's drawing context
+    (send dc draw-bitmap (pict->bitmap img) 0 0)
+    ; Save to file
+    (send bm save-file filename 'png)))
 
-; (map make-scene-button scenes)
+; use the above function and your scenes list
+; to save all of your scenes to files:
+; use (car scene) as the filename
+; and (cdr scene) as the image
+(map (lambda (scene) (save-2htdp-image ((cdr scene)) (car scene))) scenes)
+(map make-scene-button scenes)
 
 
 ;;; --- 2g: Show the frame ---
 
-; (send frame show #t)
+(send frame show #t)
 
 
 ;;; CHALLENGE: Can you add a "Random Scene" button that picks
