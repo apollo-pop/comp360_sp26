@@ -130,7 +130,6 @@
 (require (only-in pict pict->bitmap)) 
 
 
-
 ;;; --- 2a: Define your scenes ---
 ;;; Each scene is a pair: a title string and a function that
 ;;; produces the image. Using a thunk (zero-argument lambda)
@@ -185,11 +184,18 @@
 (define canvas (new canvas% (parent panel)
                     (min-width 300) (min-height 300)
                     (paint-callback
-                     (lambda (canvas dc)          
-                       ;; Draw the bitmap of image at coordinates (0, 0)
-                       (send dc draw-bitmap current-image 0 0)))))
+                     (lambda (canvas dc)
+                       (when current-image
+                         ;; Draw the bitmap of image at coordinates (0, 0)
+                         (send dc draw-bitmap current-image 0 0))))))
 
-
+(define (image->bitmap img)
+  (let* ([width  (image-width img)]
+         [height (image-height img)]
+         [bm (make-bitmap width height)]
+         [dc (new bitmap-dc% [bitmap bm])])
+    (send dc draw-bitmap (pict->bitmap img) 0 0)
+    bm))
 ;;; --- 2e: Create a button for each scene ---
 ;;; Write a function (make-scene-button scene) that takes one
 ;;; entry from the scenes list (a pair of title and thunk) and
@@ -208,7 +214,7 @@
        (label (car scene))
        (callback (lambda (button event)
                    (send title-label set-label (car scene))
-                   (set! current-image (bitmap/file (string-append (car scene) ".png")))
+                   (set! current-image (image->bitmap ((cdr scene))))
                    (send canvas refresh)))))    ; replace 'todo with your callback, recall what arguments a button callback needs!
 
 
@@ -224,7 +230,7 @@
     ; Draw the 2htdp image onto the bitmap's drawing context
     (send dc draw-bitmap (pict->bitmap img) 0 0)
     ; Save to file
-    (send bm save-file filename 'png)))
+    (send bm save-file (string-append filename ".png") 'png)))
 
 ; use the above function and your scenes list
 ; to save all of your scenes to files:
@@ -262,20 +268,20 @@
 ;;;   ((curry + 1) 5)  => 6
 
 ;;; Your turn:
-;;; (curry * 3)        is equivalent to:
-;;; ((curry * 3) 10)   => ?
+;;; (curry * 3)        is equivalent to: (lambda (x) (* 3 x))
+;;; ((curry * 3) 10)   => ? 30
 
-;;; (curry string-append "hello ")  is equivalent to:
-;;; ((curry string-append "hello ") "world")  => ?
+;;; (curry string-append "hello ")  is equivalent to: (lambda (x) (string-append "hello " x))
+;;; ((curry string-append "hello ") "world")  => "hello world"
 
-;;; (curryr expt 2)    is equivalent to:
-;;; ((curryr expt 2) 5)  => ?
+;;; (curryr expt 2)    is equivalent to: (lambda (x) (expt x 2)
+;;; ((curryr expt 2) 5)  => 5^2 = 25
 ;;; Hint: (expt base power). curryr fixes the RIGHTMOST argument.
 
-;;; (curryr - 1)       is equivalent to:
-;;; ((curryr - 1) 10)  => ?
+;;; (curryr - 1)       is equivalent to: (lambda (x) (- x 1))
+;;; ((curryr - 1) 10)  => 9
 ;;; How is this different from (curry - 1)?
-;;; ((curry - 1) 10)   => ?
+;;; ((curry - 1) 10)   => -9
 
 
 ;;; --- 3b: Curry with map ---
@@ -289,26 +295,26 @@
 ;;; With lambda:
 ; (map (lambda (x) (+ x 10)) nums)
 ;;; With curry:
-; (map 'todo nums)
+; (map (curry + 10) nums)
 
 ;;; Task: Multiply every number by -1
 ;;; With lambda:
 ; (map (lambda (x) (* -1 x)) nums)
 ;;; With curry:
-; (map 'todo nums)
+; (map (curry * -1) nums)
 
 ;;; Task: Raise every number to the 3rd power
 ;;; Recall: (expt base power)
 ;;; With lambda:
 ; (map (lambda (x) (expt x 3)) nums)
 ;;; With curry or curryr (which do you need here and why?):
-; (map 'todo nums)
+; (map (curryr expt 3) nums)
 
 ;;; Task: Append "!" to every string in words
 ;;; With lambda:
 ; (map (lambda (s) (string-append s "!")) words)
 ;;; With curry or curryr:
-; (map 'todo words)
+; (map (curryr string-append "!") words)
 
 
 ;;; --- 3c: Curry with filter ---
@@ -318,14 +324,16 @@
 ;;; With lambda:
 ; (filter (lambda (x) (> x 3)) nums)
 ;;; With curry or curryr:
-; (filter 'todo nums)
+; (filter (curryr > 3) nums)
 
 ;;; Task: Keep only strings longer than 5 characters
 ;;; Hint: (string-length s) returns the length of s
 ;;; With lambda:
 ; (filter (lambda (s) (> (string-length s) 5)) words)
 ;;; Can this be done with a single curry/curryr? Why or why not?
-;;; Answer:
+;;; Answer: No, you need to compose two curries:
+(filter (compose (curryr > 5) (curry string-length)) '("hey" "there" "friend"))
+
 
 
 ;;; --- 3d: Curry for building functions ---

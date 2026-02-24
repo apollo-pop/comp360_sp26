@@ -2,6 +2,8 @@
 (require 2htdp/image)
 (require lang/posn)
 
+(provide sierpinski-triangle koch-snowflake draw-l-system)
+
 (define (midpoint a b)
   (cons (* 1.0 (/ (+ (car a) (car b)) 2)) (* 1.0 (/ (+ (cdr a) (cdr b)) 2))))
 
@@ -267,7 +269,7 @@
                      20
                      200
                      0))
-square-koch
+;square-koch
 
 (define sierpinski (draw-l-system
                      "F-G-G"
@@ -278,7 +280,7 @@ square-koch
                      50
                      50
                      0))
-sierpinski
+;sierpinski
 
 (define fractal-plant (draw-l-system
                        "X"
@@ -287,7 +289,7 @@ sierpinski
                        6
                        (/ (* 25 pi) 180)
                        20 200 0))
-fractal-plant
+;fractal-plant
 
 (define dragon (draw-l-system
                 "FX"
@@ -296,4 +298,5 @@ fractal-plant
                 10
                 (/ pi 2)
                 100 200 0))
-dragon
+;dragon
+
