@@ -1,5 +1,4 @@
-;#lang reader "first_reader.rkt"
-#lang reader "stacker.rkt"
+#lang reader "first_reader.rkt"
 foo
 bar
 zam
