@@ -78,11 +78,7 @@
 ;;; Answer:
 ;;;
 ;;; 3b: Modify read-syntax to filter out comment lines as well.
-;;;     Hint: src-datums is a list of s-expressions, which you
-;;;     can filter, either before assigning the list to src-datums,
-;;;     after you've defined src-datums but before you use it, or
-;;;     while you're using it, since , "unquotes" the module datum,
-;;;     letting you insert Racket code.
+;;;     Hint: modify src-lines!
 ;;;
 ;;; Test your modified language with comments!
 ;;;   ; push two numbers
@@ -137,7 +133,11 @@
 ;;;     popped first? Write the correct expression using pop-stack!.
 ;;; Answer:
 ;;;
-;;; 6b: Add a division case to handle ABOVE and provide /.
+;;; 6b: Add a division case to handle and provide /.
+;;;     Hint/challenge: instead of adding an entire
+;;;     new branch in your cond, can you modify
+;;;     the subtraction branch to handle division, too?
+;;;     Recall: arg is an actual Racket function: +*-/
 ;;;
 ;;; Test your modified language with division!
 ;;;   #lang reader "stacker.rkt"
