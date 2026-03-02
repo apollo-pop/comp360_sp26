@@ -1,4 +1,4 @@
-# Project 4: Logo — A Turtle Graphics Language
+# Project 4: Rhogo -- A Turtle Graphics Language
 
 **COMP 360: Programming Languages**
 
@@ -7,8 +7,6 @@
 ## Expected Effort
 
 This project is moderate in difficulty. I expect you to spend between 5 and 10 hours. If you can't complete the project within 10 hours, let yourself stop working.
-
-Your effort now will pay off in the future.
 
 ---
 
@@ -20,23 +18,23 @@ Your effort now will pay off in the future.
 
 ## Grading and Submission
 
-This project is **due the week of March 9**. You can bring me your code anytime that week during my office hours. Grading should take no more than 10 minutes.
+This project is **due the week of March 16**. You can bring me your code anytime that week during my office hours. Grading should take no more than 15 minutes.
 
 Your grade will be based on how much of the project you completed, how much time you spent, and how well you understand your own code.
 
-My solutions will become available on March 13.
+My solutions will become available on March 20.
 
 ---
 
 ## Background: Logo and Turtle Graphics
 
-In 1967, Seymour Papert, Wally Feurzeig, and Cynthia Solomon developed a programming language called **Logo** at Bolt, Beranek and Newman in Cambridge, Massachusetts. Papert — a mathematician who had studied under Jean Piaget — wanted a language where children could learn mathematics by *doing* rather than by watching. Logo was designed to be "low floor, high ceiling": easy enough for an eight-year-old to write a first program, expressive enough for serious mathematical exploration.
+In 1967, Seymour Papert, Wally Feurzeig, and Cynthia Solomon developed a programming language called **Logo**. Papert, a mathematician who had studied under Jean Piaget, wanted a language where children could easily feel and imagine what their programs would do.
 
-Logo's most famous feature is **turtle graphics**. The metaphor is concrete and physical: imagine a small mechanical turtle sitting on a large sheet of paper, holding a pen. You give it commands — *move forward 100 steps*, *turn right 90 degrees*, *lift the pen* — and it draws a picture as it moves. This direct, embodied metaphor made geometry intuitive and interactive in a way that no textbook could match.
+Logo's most famous feature is **turtle graphics**. Imagine a turtle sitting on a large sheet of paper, holding a pen (in its mouth or with its tail or coming out of its belly). You give it commands — *move forward 100 steps*, *turn right 90 degrees*, *lift the pen* — and it draws a picture as it moves.
 
-Papert's 1980 book *Mindstorms: Children, Computers, and Powerful Ideas* popularized Logo and its educational philosophy worldwide. Logo spread into schools through the 1980s and 90s, and its influence has never really faded: Python's `turtle` module, Scratch's motion blocks, and the block-based geometry tools in countless educational apps all trace their lineage to Papert's turtle.
+Papert's 1980 book *Mindstorms: Children, Computers, and Powerful Ideas* pushed computational thinking into elementary, middle, and high schools, using Logo and turtle graphics.
 
-Here is a complete program in our Logo dialect that draws a square:
+We'll make a *Logo-like dialect*, our own lanuage based off Logo. Let's call our dialect **Rhogo**. Here is a Rhogo program that draws a square:
 
 ```
 ; square.turtle
@@ -51,7 +49,7 @@ RIGHT 90
 FORWARD 100
 ```
 
-And one that draws a five-pointed star (once you implement `REPEAT`):
+And one that draws a five-pointed star (notice the syntax `REPEAT`; can you infer the semantics?):
 
 ```
 ; star.turtle
@@ -63,7 +61,7 @@ REPEAT 5
 END
 ```
 
-In this project, you will implement the Logo interpreter as a Racket **domain-specific language** (DSL).
+You will implement a Rhogo interpreter in Racket.
 
 ---
 
@@ -85,15 +83,15 @@ Recall the `funstacker` example from class. Its core is a stack machine driven b
 
 Numbers push onto the stack. Operators pop values, compute a result, and push it back. The accumulator is the stack itself.
 
-Your Logo language works the same way — with a different accumulator. Instead of a number stack, the accumulator is the **turtle state**: position, heading, pen status, drawing color, and the image being built up.
+Rhogo works the same way: instead of a number stack, the accumulator is the **turtle state**: position, heading, pen status, drawing color, and the image being built up.
 
 The parallel is exact:
 
 | Funstacker | Logo |
 |---|---|
-| A **number** → pushes to stack | A **number** → saves as next command's argument |
-| An **operator** (`+`, `*`) → pops two values, computes | A **command** (`FORWARD`, `RIGHT`) → consumes the pending argument, updates state |
-| Accumulator: a list of numbers | Accumulator: the full turtle state |
+| A **number** pushes to stack | A **number** saves as next command's argument |
+| An **operator** (`+`, `*`) pops two values, computes | A **command** (`FORWARD`, `RIGHT`) consumes the pending argument, updates state |
+| Accumulator: a list of numbers | Accumulator: a turtle |
 
 Your `handle-turtle-cmds` will look nearly identical to `handle-args`.
 
@@ -103,44 +101,98 @@ Your `handle-turtle-cmds` will look nearly identical to `handle-args`.
 
 This project has a different structure from Projects 1–3. You will write two kinds of files:
 
-1. **`project4.rkt`** — the language implementation. This is what you submit and what I grade. It defines how Logo programs are read and executed.
+1. **`project4.rkt`:** the language implementation. This will define Rhogo syntax and semantics.
 
-2. **`.turtle` files** — programs written *in your language*. You'll create these to test your implementation as you go. Every `.turtle` file begins with `#lang "project4.rkt"`.
+2. **`.turtle` files:** programs written *in Rhogo*. You'll create these to test your implementation as you go. Every `.turtle` file should begin with `#lang "project4.rkt"`.
 
 To test a `.turtle` file in DrRacket:
 1. Create a new file (e.g., `test.turtle`) in the same folder as `project4.rkt`
 2. Make sure the first line is exactly: `#lang "project4.rkt"`
 3. Write your Logo program below that line
-4. Run it — your `project4.rkt` controls what happens
+4. Run it: your `project4.rkt` controls what happens
 
-**Note:** You will need the `beautiful-racket` package if it is not already installed. Run this in the DrRacket REPL (or terminal):
-
-```racket
-(require (planet dmac/spin)) ; not this
-```
-
-Actually, run this in the terminal or DrRacket's package manager:
-
-```
-raco pkg install beautiful-racket
-```
+**Note:** You will need the `beautiful-racket` package if it is not already installed.
 
 The starter `project4.rkt` includes `#lang br/quicklang` and the following provided helpers — you do not need to implement these:
 
-- `CANVAS-WIDTH`, `CANVAS-HEIGHT`, `BLANK-CANVAS` — canvas size constants
-- `next-x`, `next-y` — turtle movement math
-- `draw-line` — draws a line segment on an image
-- `list-set` — replaces an element in a list by index
-- `tokenize` — breaks a line of text into Racket datums
-- `turtle-module-begin` / `#%module-begin` — the macro that extracts your final image
+- `CANVAS-WIDTH`, `CANVAS-HEIGHT`, `BLANK-CANVAS`: canvas size constants
+- `next-x`, `next-y`: turtle movement math
+- `draw-line`: draws a line segment on an image
+- `list-set`: replaces an element in a list by index
+- `tokenize`: breaks a line of text into Racket datums
+- `turtle-module-begin` / `#%module-begin`: the macro that extracts your final image
 
 ---
 
-## Part 1: Reading the Program
+## Part 1: Turtle State
+
+The turtle state holds everything needed to interpret Logo commands. Represent it as a 7-element list:
+
+```
+(list x y angle pen-down? color image pending)
+  ;    0  1   2      3       4     5      6
+```
+
+- `x`, `y` — turtle position (numbers)
+- `angle` — heading in radians (`0` = rightward; `(- (/ pi 2))` = upward)
+- `pen-down?` — boolean; `#t` means draw as the turtle moves
+- `color` — a color string like `"black"` or `"red"`
+- `image` — the accumulated `2htdp/image` being drawn on
+- `pending` — the most recent number seen; consumed by the next movement command
+
+### Problem 1.1: State Accessors
+
+Write seven accessor functions. Use `list-ref` or the `car`/`cadr`/... family.
+
+```racket
+(define test-s (list 10 20 0 #t "blue" BLANK-CANVAS 50))
+
+(state-x test-s)       ; => 10
+(state-y test-s)       ; => 20
+(state-angle test-s)   ; => 0
+(state-pen? test-s)    ; => #t
+(state-color test-s)   ; => "blue"
+(state-image test-s)   ; => BLANK-CANVAS
+(state-pending test-s) ; => 50
+```
+
+### Problem 1.2: State Updaters
+
+Write seven updater functions. Each takes a state and a new value and returns a new state with that one field replaced. Use the provided `list-set` helper.
+
+**Notice:** this is not using mutation!
+
+```racket
+(state-x (set-x test-s 99))       ; => 99
+(state-y (set-y test-s 99))       ; => 99
+(state-pen? (set-pen test-s #f))  ; => #f
+(state-color (set-color test-s "green")) ; => "green"
+; ... and so on for set-angle, set-image, set-pending
+```
+**WRITE BETTER TESTS**
+
+### Problem 1.3: initial-state
+
+Write `initial-state`, the starting state for every Logo program: turtle centered on the canvas, pen up, color black, blank canvas, no pending argument.
+
+```racket
+(state-x initial-state)       ; => 250  (center of 500x500 canvas)
+(state-y initial-state)       ; => 250
+(state-angle initial-state)   ; => (- (/ pi 2))  (pointing upward)
+(state-pen? initial-state)    ; => #f
+(state-color initial-state)   ; => "black"
+(state-pending initial-state) ; => 0
+```
+
+*Note:* In `2htdp/image`, y increases downward. An angle of `(- (/ pi 2))` points in the negative-y direction ("up") which is Logo's traditional starting direction.
+
+---
+
+## Part 2: Reading the Program
 
 When Racket encounters `#lang "project4.rkt"`, it calls your `read-syntax` function to parse the program into a module. Finish implementing it.
 
-### Problem 1.1: read-syntax
+### Problem 2.1: read-syntax
 
 The function receives the program as a list of strings (one per line). Your job:
 
@@ -161,13 +213,15 @@ Complete the two missing pieces in `read-syntax`:
   (datum->syntax #f module-datum))
 ```
 
-*Hint:* Use `filter` with a predicate that checks `(string-trim line)` — is it empty? Does it start with `";"`? Use `string=?` and `string-prefix?`.
+*Hint:* Use `filter` with a predicate that checks `(string-trim line)`. Is it empty? Does it start with `";"`? Use `string=?` and `string-prefix?`. Look up things you don't know! Try to figure them out yourself!
 
-*Hint:* `(map tokenize filtered)` gives you a list of lists. Use `(apply append ...)` to flatten it into one list.
+*Hint:* `(map tokenize filtered)` gives you a list of lists. Use `(apply append ...)` to flatten it into one list. Look up things you don't know! Try to figure them out yourself!
 
 *Test:* Temporarily add `(displayln src-datums)` inside `read-syntax` and run a small `.turtle` file. Make sure you see a flat list of symbols and numbers, with no blank entries.
 
-### Problem 1.2: Understanding #%module-begin
+**PROVIDE A TEST**
+
+### Problem 2.2: Understanding #%module-begin
 
 The `turtle-module-begin` macro is provided for you:
 
@@ -177,70 +231,9 @@ The `turtle-module-begin` macro is provided for you:
      (display (state-image EXPR))))
 ```
 
-`EXPR` here is `(handle-turtle-cmds ...)` — the single expression produced by `read-syntax`. The macro calls `handle-turtle-cmds`, extracts the image from the final state using `state-image`, and displays it. DrRacket renders `2htdp/image` images inline in the output area.
+`EXPR` here is `(handle-turtle-cmds ...)`, the single expression produced by `read-syntax`. The macro calls `handle-turtle-cmds`, extracts the image from the final state using `state-image`, and displays it. DrRacket renders `2htdp/image` images inline in the output area.
 
-**Question (no code required):** In the funstacker example, `#%module-begin` called `(first HANDLE-ARGS-EXPR)`. Why `first`? Why does the turtle version use `state-image` instead?
-
----
-
-## Part 2: Turtle State
-
-The turtle state holds everything needed to interpret Logo commands. Represent it as a 7-element list:
-
-```
-(list x y angle pen-down? color image pending)
-  ;    0  1   2      3       4     5      6
-```
-
-- `x`, `y` — turtle position (numbers)
-- `angle` — heading in radians (`0` = rightward; `(- (/ pi 2))` = upward)
-- `pen-down?` — boolean; `#t` means draw as the turtle moves
-- `color` — a color string like `"black"` or `"red"`
-- `image` — the accumulated `2htdp/image` being drawn on
-- `pending` — the most recent number seen; consumed by the next movement command
-
-### Problem 2.1: State Accessors
-
-Write seven accessor functions. Use `list-ref` or the `car`/`cadr`/... family.
-
-```racket
-(define test-s (list 10 20 0 #t "blue" BLANK-CANVAS 50))
-
-(state-x test-s)       ; => 10
-(state-y test-s)       ; => 20
-(state-angle test-s)   ; => 0
-(state-pen? test-s)    ; => #t
-(state-color test-s)   ; => "blue"
-(state-image test-s)   ; => BLANK-CANVAS
-(state-pending test-s) ; => 50
-```
-
-### Problem 2.2: State Updaters
-
-Write seven updater functions. Each takes a state and a new value and returns a new state with that one field replaced. Use the provided `list-set` helper.
-
-```racket
-(state-x (set-x test-s 99))       ; => 99
-(state-y (set-y test-s 99))       ; => 99
-(state-pen? (set-pen test-s #f))  ; => #f
-(state-color (set-color test-s "green")) ; => "green"
-; ... and so on for set-angle, set-image, set-pending
-```
-
-### Problem 2.3: initial-state
-
-Write `initial-state`, the starting state for every Logo program: turtle centered on the canvas, pen up, color black, blank canvas, no pending argument.
-
-```racket
-(state-x initial-state)       ; => 250  (center of 500x500 canvas)
-(state-y initial-state)       ; => 250
-(state-angle initial-state)   ; => (- (/ pi 2))  (pointing upward)
-(state-pen? initial-state)    ; => #f
-(state-color initial-state)   ; => "black"
-(state-pending initial-state) ; => 0
-```
-
-*Note:* In `2htdp/image`, y increases downward. An angle of `(- (/ pi 2))` points in the negative-y direction — upward on screen — which is Logo's traditional starting direction.
+**Question:** In the funstacker example, `#%module-begin` called `(first HANDLE-ARGS-EXPR)`. Why `first`? Why does the turtle version use `state-image` instead?
 
 ---
 
@@ -417,7 +410,7 @@ RIGHT 10
 FORWARD 80  RIGHT 90  FORWARD 80  RIGHT 90  FORWARD 80  RIGHT 90  FORWARD 80
 ```
 
-Make something you'd enjoy looking at and that you're able to explain!
+Make something you're proud of and that you're able to explain!
 
 ---
 
@@ -433,7 +426,7 @@ Make something you'd enjoy looking at and that you're able to explain!
 
 5. **Degrees vs. radians.** The `pending` slot stores a number in degrees (as the user wrote it). Your `handle-cmd` must convert to radians before updating the angle. A RIGHT 90 should change the angle by `(/ pi 2)`.
 
-6. **Use `(displayln state)` inside `handle-cmd`.** Watching the state evolve is the fastest way to catch off-by-one errors in your angle or position math.
+6. **Use `(displayln state)` inside `handle-cmd`.** Watching the state evolve is an easy way to catch errors in your math.
 
 ---
 
@@ -443,4 +436,4 @@ Make something you'd enjoy looking at and that you're able to explain!
 - [Beautiful Racket / br/quicklang documentation](https://beautifulracket.com/) — the library powering `read-syntax` and `define-macro`
 - [Logo programming language (Wikipedia)](https://en.wikipedia.org/wiki/Logo_(programming_language))
 - [Turtle graphics (Wikipedia)](https://en.wikipedia.org/wiki/Turtle_graphics)
-- *Mindstorms: Children, Computers, and Powerful Ideas* — Seymour Papert, 1980 (worth skimming!)
+- *Mindstorms: Children, Computers, and Powerful Ideas* — Seymour Papert, 1980

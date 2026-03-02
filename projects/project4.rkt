@@ -1,27 +1,22 @@
 #lang br/quicklang
 (require 2htdp/image)
 
-;;; Provided Helpers:
-
+;;; HELPERS
 ;; Canvas constants
 (define CANVAS-WIDTH 500)
 (define CANVAS-HEIGHT 500)
 (define BLANK-CANVAS (rectangle CANVAS-WIDTH CANVAS-HEIGHT "solid" "white"))
-
 ;; Turtle movement math
 (define (next-x x angle dist) (+ x (* dist (cos angle))))
 (define (next-y y angle dist) (+ y (* dist (sin angle))))
-
 ;; Draw a line between two points on an image
 (define (draw-line x1 y1 x2 y2 color image)
   (add-line image x1 y1 x2 y2 color))
-
 ;; Replace element at index i in list lst with value v
 (define (list-set lst i v)
   (if (= i 0)
       (cons v (cdr lst))
       (cons (car lst) (list-set (cdr lst) (- i 1) v))))
-
 ;; Read all Racket-readable tokens from a single line of text
 (define (tokenize line)
   (let loop ([port (open-input-string line)] [acc '()])
@@ -30,18 +25,34 @@
         (reverse acc)
         (loop port (cons tok acc)))))
 
-;; module-begin: calls handle-turtle-cmds, extracts the final image, displays it
-(define-macro (turtle-module-begin EXPR)
-  #'(#%module-begin
-     (display (state-image EXPR))))
-(provide (rename-out [turtle-module-begin #%module-begin]))
+
+;;; Part 1: Turtle State
+;;;
+;;; State = (list x y angle pen-down? color image pending)
+;;;           idx: 0  1   2      3       4     5      6
+
+; 1.1: state accessors
+; state-x, state-y, state-angle, state-pen?, state-color, state-image, state-pending
+
+; tests
 
 
-;;; Part 1: Reading the Program
+; 1.2: state updaters
+; set-x, set-y, set-angle, set-pen, set-color, set-image, set-pending
 
+; tests
+
+
+; 1.3: initial-state
+; turtle at canvas center, pointing up (angle = -(pi/2)), pen up, color "black", no pending arg
+
+; tests
+
+;;; Part 2: Reading the Program
+
+;; THE READER
 ;; read-syntax is called by Racket when a file beginning with #lang "project4.rkt" is opened.
 ;; Complete the two missing definitions below.
-
 (define (read-syntax path port)
   (define src-lines (port->lines port))
   (define filtered ...)   ; filter out blank lines and lines starting with ";"
@@ -53,27 +64,12 @@
 (provide read-syntax)
 
 
-;;; Part 2: Turtle State
-;;;
-;;; State = (list x y angle pen-down? color image pending)
-;;;           idx: 0  1   2      3       4     5      6
-
-; 2.1: state accessors
-; state-x, state-y, state-angle, state-pen?, state-color, state-image, state-pending
-
-; tests
-
-
-; 2.2: state updaters
-; set-x, set-y, set-angle, set-pen, set-color, set-image, set-pending
-
-; tests
-
-
-; 2.3: initial-state
-; turtle at canvas center, pointing up (angle = -(pi/2)), pen up, color "black", no pending arg
-
-; tests
+;; THE EXPANDER
+;; module-begin: calls handle-turtle-cmds, extracts the final image, displays it
+(define-macro (turtle-module-begin EXPR)
+  #'(#%module-begin
+     (display (state-image EXPR))))
+(provide (rename-out [turtle-module-begin #%module-begin]))
 
 
 ;;; Part 3: Command Dispatch
@@ -111,42 +107,3 @@
 ;;; Part 5: Your Logo Program
 ;;; Write your program in a separate .turtle file.
 
-
-;;; My solution (for reference after the due date):
-
-; (define (handle-turtle-cmds . tokens)
-;   (for/fold ([state initial-state])
-;             ([token (in-list tokens)])
-;     (handle-cmd state token)))
-;
-; (define (handle-cmd state token)
-;   (cond
-;     [(number? token)
-;      (set-pending state token)]
-;     [(equal? token 'FORWARD)
-;      (let* ([dist (state-pending state)]
-;             [nx (next-x (state-x state) (state-angle state) dist)]
-;             [ny (next-y (state-y state) (state-angle state) dist)]
-;             [img (if (state-pen? state)
-;                      (draw-line (state-x state) (state-y state) nx ny
-;                                 (state-color state) (state-image state))
-;                      (state-image state))])
-;        (set-image (set-x (set-y state ny) nx) img))]
-;     [(equal? token 'BACK)
-;      (let* ([dist (- (state-pending state))]
-;             [nx (next-x (state-x state) (state-angle state) dist)]
-;             [ny (next-y (state-y state) (state-angle state) dist)]
-;             [img (if (state-pen? state)
-;                      (draw-line (state-x state) (state-y state) nx ny
-;                                 (state-color state) (state-image state))
-;                      (state-image state))])
-;        (set-image (set-x (set-y state ny) nx) img))]
-;     [(equal? token 'RIGHT)
-;      (set-angle state (+ (state-angle state) (* (state-pending state) (/ pi 180))))]
-;     [(equal? token 'LEFT)
-;      (set-angle state (- (state-angle state) (* (state-pending state) (/ pi 180))))]
-;     [(equal? token 'PENDOWN)
-;      (set-pen state #t)]
-;     [(equal? token 'PENUP)
-;      (set-pen state #f)]
-;     [else state]))

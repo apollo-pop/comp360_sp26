@@ -7,8 +7,10 @@
          path  ; file path
          port) ; a port is a generic interface for input/output, can be read/written
   (define src-lines (port->lines port)) ; converts all lines of input to list of strings
+  (display src-lines)
   (datum->syntax #f '(module lucy br ; this is code that describes the module
                        42)))
+(provide read-syntax)
 ; code represented as a 'symbol, ex '(+ 1 1) is called an s-expression
 ; so the above reader produces the module:
 ; (module lucy br 42), where lucy is the module name and br is the expander
