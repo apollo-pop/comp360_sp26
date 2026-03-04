@@ -86,7 +86,7 @@
 ; Use for/fold to process all tokens left to right, starting from initial-state.
 ; (This is the direct parallel to handle-args in the funstacker example.)
 
-(define (handle-turtle-cmds . tokens) 'todo )
+(define (handle-turtle-cmds . cmds) 'todo )
 (provide handle-turtle-cmds)
 
 ; tests (write a .turtle file and run it!)

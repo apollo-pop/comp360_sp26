@@ -328,6 +328,8 @@ Each command arrives as a list: `'(FORWARD 100)`, `'(RIGHT 90)`, `'(PENDOWN)`, e
 
 For **FORWARD**: Create a new turtle whose positiion is `(second cmd)` steps ahead of its current direction, and whose image has a new line drawn on it, if the pen is down. Use the provided `next-x`, `next-y`, and `draw-line` helpers.
 
+*Hint:* `(set-x (set-y state new-y) new-x)` creates a new turtle with updated x/y coordinates
+
 For **BACK**: Create a new turtle whose positiion is `(second cmd)` steps in the *opposite* direction (negate the distance, or add `pi` to the angle temporarily), and whose image has a new line drawn on it, if the pen is down.
 
 For **RIGHT**: Create a new turtle whose angle is changed by `(second cmd)` degrees. In screen coordinates (y-down), clockwise rotation *adds* to the angle. Convert degrees to radians with `(* deg (/ pi 180))`.
@@ -430,25 +432,15 @@ Add a `SETPOS` command that teleports the turtle to an absolute position without
 
 `SETPOS` requires *two* arguments: `SETPOS 100 200` moves the turtle to (100, 200). The command arrives as `'(SETPOS 100 200)`, so `(second cmd)` and `(third cmd)` are the x and y coordinates directly — no accumulation needed.
 
-### Problem 4.3: REPEAT (Stretch Goal)
+### Problem 4.3: REPEAT (optional, AI usage permitted)
 
 Add support for `REPEAT n ... END` blocks. This is the most challenging extension.
 
-The difficulty: `for/fold` processes one command-list at a time with no lookahead. It can't naturally "group" a block of commands and repeat it.
+This is a syntax structure, so we should add support for it in our reader. This involves an additional syntax-reading step: after filtering empty lines and comments, we should:
 
-**Strategy:** Pre-process the command list *before* the fold. Write a function `expand-repeats` that finds every `'(REPEAT n)` ... `'(END)` sequence and replaces it with `n` copies of the inner commands:
+**Test this by displaying the src-datums after processing!**
 
-```racket
-; Example:
-(expand-repeats '((PENDOWN) (REPEAT 3) (FORWARD 50) (RIGHT 120) (END)))
-; => '((PENDOWN) (FORWARD 50) (RIGHT 120) (FORWARD 50) (RIGHT 120) (FORWARD 50) (RIGHT 120))
-```
-
-Then call `expand-repeats` on your command list before the fold in `handle-turtle-cmds`.
-
-*Hint:* Write this recursively. When you see `'(REPEAT n)` at the head of the list, grab the count with `(second (first cmds))`, collect commands until `'(END)`, replicate the block, and recurse on the remainder. The base case is an empty list.
-
-*Added Challenge:* Make `expand-repeats` handle nested `REPEAT`s (a `REPEAT` inside a `REPEAT`). You'll need to track nesting depth when collecting the inner block.
+*Added Challenge (use AI if you want):* Make `expand-repeats` handle nested `REPEAT`s (a `REPEAT` inside a `REPEAT`). You'll need to track nesting depth when collecting the inner block.
 
 ---
 
@@ -501,17 +493,11 @@ Make something you're proud of and that you're able to explain!
 
 ## Tips for Success
 
-1. **Start with Part 2.** Your state accessors and updaters need to work before anything else can. Test them thoroughly before moving on.
+1. **Screen coordinates go downward.** `FORWARD` while facing "up" *decreases* y. The initial angle `(- (/ pi 2))` makes this work. If your turtle moves the wrong direction, check your angle arithmetic.
 
-2. **Test `handle-cmd` command by command.** Before running a `.turtle` file, call `handle-cmd` directly in DrRacket with `initial-state` and individual command lists like `'(PENDOWN)` and `'(FORWARD 100)`. Watch the state evolve.
+2. **Degrees vs. radians.** `(second cmd)` gives you degrees (as the user wrote them). Your `handle-cmd` must convert to radians before updating the angle. A RIGHT 90 should change the angle by `(/ pi 2)`.
 
-3. **Trace a square on paper first.** Write out exactly what the state should look like after each command in the square example: x, y, angle, pen. Then verify your code matches.
-
-4. **Screen coordinates go downward.** `FORWARD` while facing "up" *decreases* y. The initial angle `(- (/ pi 2))` makes this work. If your turtle moves the wrong direction, check your angle arithmetic.
-
-5. **Degrees vs. radians.** `(second cmd)` gives you degrees (as the user wrote them). Your `handle-cmd` must convert to radians before updating the angle. A RIGHT 90 should change the angle by `(/ pi 2)`.
-
-6. **Use `(displayln state)` inside `handle-cmd`.** Watching the state evolve is an easy way to catch errors in your math.
+3. **Use `(displayln state)` inside `handle-cmd`.** Watching the state evolve is an easy way to catch errors in your math.
 
 ---
 
