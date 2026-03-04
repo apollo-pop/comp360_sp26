@@ -7,6 +7,7 @@
 5
 +
 8
+; shouldn't register!
 +
 5
 -

@@ -81,17 +81,19 @@ Recall the `funstacker` example from class. Its core is a stack machine driven b
        (cons op-result (drop stack-acc 2))])))
 ```
 
+**See `funstacker/answers.rkt` for a `foldl` implementation of the above code!**
+
 Numbers push onto the stack. Operators pop values, compute a result, and push it back. The accumulator is the stack itself.
 
 Rhogo works the same way: instead of a number stack, the accumulator is the **turtle state**: position, heading, pen status, drawing color, and the image being built up.
 
-The parallel is exact:
+Summary:
 
-| Funstacker | Logo |
+| Funstacker | Rhogo |
 |---|---|
 | A **number** pushes to stack | A **number** saves as next command's argument |
 | An **operator** (`+`, `*`) pops two values, computes | A **command** (`FORWARD`, `RIGHT`) consumes the pending argument, updates state |
-| Accumulator: a list of numbers | Accumulator: a turtle |
+| Accumulator: a stack | Accumulator: a turtle |
 
 Your `handle-turtle-cmds` will look nearly identical to `handle-args`.
 
@@ -103,7 +105,12 @@ This project has a different structure from Projects 1–3. You will write two k
 
 1. **`project4.rkt`:** the language implementation. This will define Rhogo syntax and semantics.
 
-2. **`.turtle` files:** programs written *in Rhogo*. You'll create these to test your implementation as you go. Every `.turtle` file should begin with `#lang "project4.rkt"`.
+2. **`.turtle` files:** programs written *in Rhogo*. You'll create these to test your implementation as you go. Every `.turtle` file should begin with `#lang "project4.rkt"`. 
+
+In Windows, to save as `.turtle` rather than `.turtle.rkt`:
+  1. **Save Definitions As ...**
+  2. **Save as type** -> "Any"
+  3. Save your file as `whatever.turtle`
 
 To test a `.turtle` file in DrRacket:
 1. Create a new file (e.g., `test.turtle`) in the same folder as `project4.rkt`
@@ -122,6 +129,12 @@ The starter `project4.rkt` includes `#lang br/quicklang` and the following provi
 - `tokenize`: breaks a line of text into Racket datums
 - `turtle-module-begin` / `#%module-begin`: the macro that extracts your final image
 
+### **Do not move on until you see the error:**
+
+`project4.rkt:71:15: state-image: unbound identifier in: state-image`
+
+This means everything is set up correctly and your `.turtle` file is finding your `project4` language reader.
+
 ---
 
 ## Part 1: Turtle State
@@ -132,6 +145,7 @@ The turtle state holds everything needed to interpret Logo commands. Represent i
 (list x y angle pen-down? color image pending)
   ;    0  1   2      3       4     5      6
 ```
+
 
 - `x`, `y` — turtle position (numbers)
 - `angle` — heading in radians (`0` = rightward; `(- (/ pi 2))` = upward)
@@ -147,6 +161,7 @@ Write seven accessor functions. Use `list-ref` or the `car`/`cadr`/... family.
 ```racket
 (define test-s (list 10 20 0 #t "blue" BLANK-CANVAS 50))
 
+; tests
 (state-x test-s)       ; => 10
 (state-y test-s)       ; => 20
 (state-angle test-s)   ; => 0
@@ -163,19 +178,42 @@ Write seven updater functions. Each takes a state and a new value and returns a 
 **Notice:** this is not using mutation!
 
 ```racket
-(state-x (set-x test-s 99))       ; => 99
-(state-y (set-y test-s 99))       ; => 99
-(state-pen? (set-pen test-s #f))  ; => #f
+; --- Each updater changes only its field ---
+(state-x     (set-x test-s 99))          ; => 99
+(state-y     (set-y test-s 99))          ; => 99
+(state-angle (set-angle test-s pi))      ; => pi
+(state-pen?  (set-pen test-s #f))        ; => #f
 (state-color (set-color test-s "green")) ; => "green"
-; ... and so on for set-angle, set-image, set-pending
+(state-pending (set-pending test-s 0))   ; => 0
+
+; --- Updating one field must not disturb the others ---
+; set-x: y, angle, pen, color, pending should be unchanged
+(state-y       (set-x test-s 99)) ; => 20   (unchanged)
+(state-angle   (set-x test-s 99)) ; => 0    (unchanged)
+(state-pending (set-x test-s 99)) ; => 50   (unchanged)
+
+; set-pen: x, y, color, pending should be unchanged
+(state-x       (set-pen test-s #f)) ; => 10     (unchanged)
+(state-color   (set-pen test-s #f)) ; => "blue" (unchanged)
+(state-pending (set-pen test-s #f)) ; => 50     (unchanged)
+
+; set-color: pen, pending should be unchanged
+(state-pen?    (set-color test-s "green")) ; => #t  (unchanged)
+(state-pending (set-color test-s "green")) ; => 50  (unchanged)
+
+; --- Updating the same field twice: last write wins ---
+(state-x (set-x (set-x test-s 99) 42)) ; => 42
+
+; --- set-image: BLANK-CANVAS -> a fresh canvas stays a fresh canvas ---
+(equal? (state-image (set-image test-s BLANK-CANVAS)) BLANK-CANVAS) ; => #t
 ```
-**WRITE BETTER TESTS**
 
 ### Problem 1.3: initial-state
 
 Write `initial-state`, the starting state for every Logo program: turtle centered on the canvas, pen up, color black, blank canvas, no pending argument.
 
 ```racket
+; tests
 (state-x initial-state)       ; => 250  (center of 500x500 canvas)
 (state-y initial-state)       ; => 250
 (state-angle initial-state)   ; => (- (/ pi 2))  (pointing upward)
@@ -205,8 +243,8 @@ Complete the two missing pieces in `read-syntax`:
 ```racket
 (define (read-syntax path port)
   (define src-lines (port->lines port))
-  (define filtered  ...)  ; remove blank and comment lines
-  (define src-datums ...) ; tokenize each line, flatten into one list
+  (define filtered  'todo)  ; remove blank and comment lines
+  (define src-datums 'todo) ; tokenize each line, flatten into one list
   (define module-datum
     `(module turtle-mod "project4.rkt"
        (handle-turtle-cmds ,@src-datums)))
@@ -217,9 +255,32 @@ Complete the two missing pieces in `read-syntax`:
 
 *Hint:* `(map tokenize filtered)` gives you a list of lists. Use `(apply append ...)` to flatten it into one list. Look up things you don't know! Try to figure them out yourself!
 
-*Test:* Temporarily add `(displayln src-datums)` inside `read-syntax` and run a small `.turtle` file. Make sure you see a flat list of symbols and numbers, with no blank entries.
+*Test:* Temporarily add `(displayln src-datums)`  and/or `(displayln module-datum)` to `read-syntax`, then run the following `.turtle` file:
 
-**PROVIDE A TEST**
+```
+#lang "project4.rkt"
+; this is a comment
+
+PENDOWN
+FORWARD 100
+
+RIGHT 90
+```
+
+If you are displaying `src-datums`, you should see:
+
+```
+(PENDOWN FORWARD 100 RIGHT 90)
+```
+
+If you are displyaing `module-datum`, you should see:
+
+```
+(module turtle-mod "project4.rkt"
+  (handle-turtle-cmds (PENDOWN FORWARD 100 RIGHT 90)))
+```
+
+The blank lines and comment were dropped; the three commands were tokenized and flattened into a single list.
 
 ### Problem 2.2: Understanding #%module-begin
 
@@ -233,7 +294,9 @@ The `turtle-module-begin` macro is provided for you:
 
 `EXPR` here is `(handle-turtle-cmds ...)`, the single expression produced by `read-syntax`. The macro calls `handle-turtle-cmds`, extracts the image from the final state using `state-image`, and displays it. DrRacket renders `2htdp/image` images inline in the output area.
 
-**Question:** In the funstacker example, `#%module-begin` called `(first HANDLE-ARGS-EXPR)`. Why `first`? Why does the turtle version use `state-image` instead?
+**You do not need to modify this macro!**
+
+**Question:** In the funstacker example, `#%module-begin` called `(first HANDLE-ARGS-EXPR)`. Why `first`? Why does the turtle version use `state-image` instead? The macro creates a module. When that module runs, what will happen?
 
 ---
 
@@ -385,9 +448,9 @@ Then call `expand-repeats` on your token list before the fold in `handle-turtle-
 
 ---
 
-## Part 5: Your Logo Program
+## Part 5: Your Rhogo Program
 
-Write a Logo program that produces an interesting image. It should use at least three different commands and produce something you'd be proud to show off.
+Write a Rhogo program that produces an interesting image. It should use at least three different commands and produce something you'd be proud to show off.
 
 Some ideas:
 
@@ -411,6 +474,8 @@ FORWARD 80  RIGHT 90  FORWARD 80  RIGHT 90  FORWARD 80  RIGHT 90  FORWARD 80
 ```
 
 Make something you're proud of and that you're able to explain!
+
+**Additionally:** prompt an LLM of your choice to write a Rhogo program based on your own description. Make it at least a little complicated!
 
 ---
 
