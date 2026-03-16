@@ -1,10 +1,12 @@
 #lang br/quicklang
 
 ;;; 1. What was "wrong" with the stacker language?
+;;;  
 
 ;;; 2. Describe a more Racket-like reading of a stacker program.
 
 ;;; 3. How is funstacker's reader different than stacker's?
+;;; src-datums is different in funstacker compared to stacker. Uses '~a instead of '(handle ~a)
 
 ;;; 4. Figure out how to view the module funstacker's reader produces.
 
