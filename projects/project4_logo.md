@@ -38,7 +38,7 @@ We'll make a *Logo-like dialect*, our own lanuage based off Logo. Let's call our
 
 ```
 ; square.turtle
-#lang "project4.rkt"
+ #lang reader "project4.rkt"
 PENDOWN
 FORWARD 100
 RIGHT 90
@@ -53,7 +53,7 @@ And one that draws a five-pointed star (notice the syntax `REPEAT`; can you infe
 
 ```
 ; star.turtle
-#lang "project4.rkt"
+#lang reader "project4.rkt"
 PENDOWN
 REPEAT 5
   FORWARD 120
@@ -107,7 +107,7 @@ This project has a different structure from Projects 1–3. You will write two k
 
 1. **`project4.rkt`:** the language implementation. This will define Rhogo syntax and semantics.
 
-2. **`.turtle` files:** programs written *in Rhogo*. You'll create these to test your implementation as you go. Every `.turtle` file should begin with `#lang "project4.rkt"`. 
+2. **`.turtle` files:** programs written *in Rhogo*. You'll create these to test your implementation as you go. Every `.turtle` file should begin with `#lang reader "project4.rkt"`. 
 
 In Windows, to save as `.turtle` rather than `.turtle.rkt`:
   1. **Save Definitions As ...**
@@ -116,7 +116,7 @@ In Windows, to save as `.turtle` rather than `.turtle.rkt`:
 
 To test a `.turtle` file in DrRacket:
 1. Create a new file (e.g., `test.turtle`) in the same folder as `project4.rkt`
-2. Make sure the first line is exactly: `#lang "project4.rkt"`
+2. Make sure the first line is exactly: `#lang reader "project4.rkt"`
 3. Write your Logo program below that line
 4. Run it: your `project4.rkt` controls what happens
 
@@ -229,7 +229,7 @@ Write 2-3 tests for `tokenize` to verify that it works correctly!
 
 ## Part 2: Reading the Program
 
-When Racket encounters `#lang "project4.rkt"`, it calls your `read-syntax` function to parse the program into a module. Finish implementing it.
+When Racket encounters `#lang reader "project4.rkt"`, it calls your `read-syntax` function to parse the program into a module. Finish implementing it.
 
 ### Problem 2.1: read-syntax
 
@@ -263,7 +263,7 @@ Complete the two missing pieces in `read-syntax`:
 *Test:* Temporarily add `(displayln src-datums)` and/or `(displayln module-datum)` to `read-syntax`, then run the following `.turtle` file:
 
 ```
-#lang "project4.rkt"
+#lang reader "project4.rkt"
 ; this is a comment
 
 PENDOWN
@@ -377,7 +377,7 @@ Compare to the funstacker pattern side-by-side:
 *Test:* Once this is working, run your first `.turtle` file! Here is a square:
 
 ```
-#lang "project4.rkt"
+#lang reader "project4.rkt"
 PENDOWN
 FORWARD 100
 RIGHT 90
@@ -391,7 +391,7 @@ FORWARD 100
 And a triangle:
 
 ```
-#lang "project4.rkt"
+#lang reader "project4.rkt"
 PENDOWN
 FORWARD 120
 RIGHT 120
@@ -411,7 +411,7 @@ Add a `COLOR` command. When the program contains `COLOR red`, subsequent lines s
 `COLOR red` arrives as `'(COLOR red)`, so `(second cmd)` is the color symbol. Convert it to a string with `symbol->string` and pass it to `set-color`.
 
 ```
-#lang "project4.rkt"
+#lang reader "project4.rkt"
 COLOR red
 PENDOWN
 FORWARD 100
@@ -446,7 +446,7 @@ This is a syntax structure, so we should add support for it in our reader. This 
 
 ## Part 5: Your Rhogo Program
 
-Write a Rhogo program that produces an interesting image. It should use at least three different commands and produce something you'd be proud to show off. **This program should be completely "hand-crafted" — no LLM interference/assistance! You'll do that at the very end!
+Write a Rhogo program that produces an interesting image. It should use at least three different commands and produce something you'd be proud to show off. **This program should be completely "hand-crafted" — no LLM interference/assistance!** You'll do that at the very end!
  
 Some ideas:
 
@@ -458,7 +458,7 @@ Some ideas:
 Here is a program that draws overlapping squares at increasing scales to get you inspired:
 
 ```
-#lang "project4.rkt"
+#lang reader "project4.rkt"
 PENDOWN
 REPEAT 3
   FORWARD 50
