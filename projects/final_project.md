@@ -108,6 +108,7 @@ Due during the week of Mar 23. Create a markdown file called `proposal.md` descr
 
 - All intended features are implemented (or scope changes are documented and justified)
 - Your language is self-consistent and documented
+- Syntax Coloring for readabilitiy
 - A `README` explains how to install, run, and write programs in your language
 - Prepared for final demo
 
