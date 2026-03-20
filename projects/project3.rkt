@@ -1,24 +1,56 @@
 #lang racket
+(require 2htdp/image)
+(require 2htdp/universe)
 
 ;;; 1: Particle Basics
 
 ; particle accessors
+(define (particle-x lst)
+  (car lst)
+  )
+(define (particle-y lst)
+  (car (cdr lst))
+  )
+(define (particle-vx lst)
+  (car (cdr (cdr lst)))
+  )
+(define (particle-vy lst)
+  (car (cdr (cdr (cdr lst))))
+  )
+(define (particle-life lst)
+  (car (cdr (cdr (cdr (cdr lst)))))
+  )
+
 
 ; tests
-
+(define test-particle (list 100 200 3 -5 60))
+(particle-x test-particle)     ; => 100
+(particle-y test-particle)     ; => 200
+(particle-vx test-particle)    ; => 3
+(particle-vy test-particle)    ; => -5
+(particle-life test-particle)  ; => 60
 
 ; make-particle
-
+(define (make-particle x y vx vy life)
+  (list x y vx vy life)
+  )
 ; tests
-
+(make-particle 50 100 2 -3 30)  ; => (list 50 100 2 -3 30)
 
 ; update-particle
-
+(define (update-particle lst)
+  (list (+ (particle-x lst) (particle-vx lst)) (+ (particle-y lst) (particle-vy lst)) (particle-vx lst)
+	(particle-vy lst) (- (particle-life lst) 1))
+  )
 ; tests
-
+(update-particle (list 100 200 3 -5 60))  ; => (list 103 195 3 -5 59)
+(update-particle (list 0 0 1 1 10))       ; => (list 1 1 1 1 9)
 
 ; particle-alive?
-
+(define (particle-alive lst)
+  (cond
+    [(> (particle-life lst) (
+     
 ; tests
 
 
