@@ -47,24 +47,48 @@
 (update-particle (list 0 0 1 1 10))       ; => (list 1 1 1 1 9)
 
 ; particle-alive?
-(define (particle-alive lst)
+(define (particle-alive? lst)
   (cond
-    [(> (particle-life lst) (
+    [(> (particle-life lst) 0) "#t"]
+    [else "#f"]))
      
 ; tests
-
+(particle-alive? (list 0 0 0 0 5))   ; => #t
+(particle-alive? (list 0 0 0 0 0))   ; => #f
+(particle-alive? (list 0 0 0 0 -1))  ; => #f
 
 ; draw-particle
+(define (draw-particle lst bg)
+  (define (scaler life)
+    (cond
+      [(> life 30) 255]
+      [(< life 0) 0]
+      [else (* (/ 255 30) life)]))
+  (place-image (circle 5 "solid" (make-color 0 0 0 (scaler (particle-life lst)))) 
+		       (particle-x lst) (particle-y lst) bg))
 
 ; tests
+(define bg (rectangle 400 400 "solid" "gray"))
+(define (draw-world w)
+  (draw-particle (list 200 200 0 0 60) bg)  ; draws a bright particle
+  (draw-particle (list 200 200 0 0 10) bg))  ; draws a faded particle
+
+(big-bang 0
+    [to-draw draw-world])
+
 
 
 ; 2: Closures
 
 ; make-spawner
-
+(define (make-spawner x y v-min v-max life)
+  (lambda ()
+    (make-particle x y (+ v-min (random (- v-max v-min))) (+ v-min (random (- v-max v-min))) life)))
+  
 ; tests
-
+(define fountain (make-spawner 200 300 1 5 60))
+(fountain)  ; => a particle at (200, 300) with random velocity, life=60
+(fountain)  ; => another particle (different random velocity)
 
 ; make-gravity
 
