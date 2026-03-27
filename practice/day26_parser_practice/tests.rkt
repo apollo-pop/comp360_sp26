@@ -6,8 +6,8 @@
 ;;; Tests are organized by part — work through them in order.
 
 (require brag/support
-         "tokenizer-solution.rkt"
-         "parser-solution.rkt")
+         "tokenizer.rkt"
+         "parser.rkt")
 
 ;;; Helper: tokenize a string and return the list of tokens
 (define (tokenize str)
