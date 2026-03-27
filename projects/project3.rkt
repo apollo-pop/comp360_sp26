@@ -69,13 +69,8 @@
 
 ; tests
 (define bg (rectangle 400 400 "solid" "gray"))
-(define (draw-world w)
-  (draw-particle (list 200 200 0 0 60) bg)  ; draws a bright particle
-  (draw-particle (list 200 200 0 0 10) bg))  ; draws a faded particle
-
-(big-bang 0
-    [to-draw draw-world])
-
+(draw-particle (list 200 200 0 0 60) bg)  ; draws a bright particle
+(draw-particle (list 200 200 0 0 10) bg)  ; draws a faded particle
 
 
 ; 2: Closures
@@ -89,30 +84,91 @@
 (define fountain (make-spawner 200 300 1 5 60))
 (fountain)  ; => a particle at (200, 300) with random velocity, life=60
 (fountain)  ; => another particle (different random velocity)
+(define explosion (make-spawner 100 100 5 15 30))
+(explosion)  ; => fast-moving particle, shorter life
 
 ; make-gravity
-
-; tests
+(define (make-gravity strength)
+  (lambda (lst)
+    (make-particle (particle-x lst) (particle-y lst) (particle-vx lst) (+ (particle-vy lst) strength) (particle-life lst))))
 
 
 ; make-wind
+(define (make-wind h v)
+  (lambda (lst)
+    (make-particle (particle-x lst) (particle-y lst) (+ (particle-vx lst) h) (+ (particle-vy lst) v) (particle-life lst))))
 
-; tests
+(define earth-gravity (make-gravity 0.5))
+(define moon-gravity (make-gravity 0.08))
 
+(define p (list 100 100 0 0 60))
+(earth-gravity p)  ; => (list 100 100 0 0.5 60)  ; vy increased, positive y is "down"
+(moon-gravity p)   ; => (list 100 100 0 0.08 60) ; less increase; tests
+
+
+(define gentle-breeze (make-wind 0.1 0))
+(define updraft (make-wind 0 -0.3))
+
+(define p1 (list 100 100 0 0 60))
+(gentle-breeze p1)  ; => (list 100 100 0.1 0 60)
+(updraft p1)        ; => (list 100 100 0 -0.3 60)
 
 ; make-friction
+(define (make-friction fric)
+  (lambda (lst)
+    (make-particle (particle-x lst) (particle-y lst) (* (particle-vx lst) fric) (* (particle-vy lst) fric) (particle-life lst))))
 
 ; tests
+(define air-resistance (make-friction 0.98))
+(define heavy-friction (make-friction 0.8))
 
+(define p2 (list 100 100 10 10 60))
+(air-resistance p2)   ; => (list 100 100 9.8 9.8 60)
+(heavy-friction p2)   ; => (list 100 100 8 8 60)
 
 ; make-attractor
+(define (make-attractor ax ay strength)
+  (lambda (lst)
+    (make-particle (particle-x lst) (particle-y lst)
+                   (cond ; checks if x is left or right of ax
+                     [(< (particle-x lst) ax) (+ (particle-vx lst) strength)]
+                     [(> (particle-x lst) ax) (- (particle-vx lst) strength)]
+                     [else (particle-vx lst)])
+                   (cond ; checks if y is left or right of ay
+                     [(< (particle-y lst) ay) (+ (particle-vy lst) strength)]
+                     [(> (particle-y lst) ay) (- (particle-vy lst) strength)]
+                     [else (particle-vy lst)])
+                   (particle-life lst))))
 
 ; tests
+(define black-hole (make-attractor 200 200 0.1))
 
+(define p3 (list 100 200 0 0 60))  ; to the left of attractor
+(black-hole p3)  ; => particle with positive vx (pulled right)
+
+(define p4 (list 200 100 0 0 60))  ; above attractor
+(black-hole p4)  ; => particle with positive vy (pulled down)
 
 ; compose-forces
+(define (compose-forces . forces)
+  (lambda (lst) ; returns force function
+    (foldl (lambda (force p) ; foldl iterates, lambda takes current force and particle
+             (force p)) ; apply current force to current particle
+           lst ; initial particle
+           forces))) ; list of forces
 
 ; tests
+(define physics (compose-forces
+                  (make-gravity 1.0)
+                  (make-wind 1.0 1.0)
+                  (make-friction 0.5)))
+
+(define p5 (list 100 100 10 0 60))
+(physics p5)
+; applies gravity: (new-vx, new-vy) = (10, 1)
+; then wind:       (new-vx, new-vy) = (11, 2)
+; then friction:   (new-vx, new-vy) = (5.5, 1.0)
+; => '(100 100 5.5 1.0 60)
 
 
 ; 3: Tail Recursion
